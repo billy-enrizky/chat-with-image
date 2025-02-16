@@ -23,7 +23,7 @@ def get_ibm_auth_token(api_key):
             "apikey": api_key
     }
     
-    response = requests.post(url=auth_url,data=data, headers=headers, verify=False)
+    response = requests.post(url=auth_url, data=data, headers=headers, verify=False)
     
     if response.status_code == 200:
         return response.json().get("access_token")
@@ -32,6 +32,62 @@ def get_ibm_auth_token(api_key):
     
 def main():
     st.title("Chat With Images")
+    
+    # Add a sidebar with an "ABOUT" section using st.expander
+    with st.sidebar:
+        with st.expander("ABOUT"):
+            st.info("""
+                This app allows users to upload an image, convert it to a base64 string, and interact with a chat interface.
+                - **Upload an Image**: Choose an image file (jpg, jpeg, png) to upload.
+                - **Chat Interface**: Type your message and interact with the assistant.
+                - **IBM API**: The app uses IBM's API to process chat messages.
+            """)
+    
+# Add an "ABOUT" section using st.expander
+    with st.expander("ABOUT", expanded=False):
+        st.info("""
+            This app allows users to upload an image, convert it to a base64 string, and interact with a chat interface.
+            - **Upload an Image**: Choose an image file (jpg, jpeg, png) to upload.
+            - **Chat Interface**: Type your message and interact with the assistant.
+            - **IBM API**: The app uses IBM's API to process chat messages.
+        """)
+    
+# Add an "ABOUT" section using st.expander
+    with st.expander("ABOUT", expanded=False):
+        st.info("""
+            This app allows users to upload an image, convert it to a base64 string, and interact with a chat interface.
+            - **Upload an Image**: Choose an image file (jpg, jpeg, png) to upload.
+            - **Chat Interface**: Type your message and interact with the assistant.
+            - **IBM API**: The app uses IBM's API to process chat messages.
+        """)
+    
+# Add an "ABOUT" section using st.expander
+    with st.expander("ABOUT", expanded=False):
+        st.info("""
+            This app allows users to upload an image, convert it to a base64 string, and interact with a chat interface.
+            - **Upload an Image**: Choose an image file (jpg, jpeg, png) to upload.
+            - **Chat Interface**: Type your message and interact with the assistant.
+            - **IBM API**: The app uses IBM's API to process chat messages.
+        """)
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "uploaded_file" not in st.session_state:
+        st.session_state.uploaded_file = False
+    
+# Add an "ABOUT" section using st.expander
+    with st.expander("ABOUT", expanded=False):
+        st.info("""
+            This app allows users to upload an image, convert it to a base64 string, and interact with a chat interface.
+            - **Upload an Image**: Choose an image file (jpg, jpeg, png) to upload.
+            - **Chat Interface**: Type your message and interact with the assistant.
+            - **IBM API**: The app uses IBM's API to process chat messages.
+        """)
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "uploaded_file" not in st.session_state:
+        st.session_state.uploaded_file = False
     
 # Add an "ABOUT" section using st.expander
     with st.expander("ABOUT", expanded=False):
@@ -63,7 +119,7 @@ def main():
                                                   "content":[{
                                                       "type": "image_url", 
                                                       "image_url": {"url": f"data:image/png;base64,{base64_image}"}
-                                                      }]})
+        st.session_state.messages.append({"role": "assistant", "content": [{"type": "text", "text": res_content}]})
             else:
                 pass
     for msg in st.session_state.messages[1:]:

@@ -33,7 +33,7 @@ def get_ibm_auth_token(api_key):
 def main():
     st.title("Chat With Images")
     
-    with st.sidebar.expander("About", expanded=True):
+    with st.sidebar.expander("About", expanded=False):
         st.markdown(
             """
             # Chat With Images
@@ -70,7 +70,7 @@ def main():
     for msg in st.session_state.messages[1:]:
         if msg['role'] == "user":
             with st.chat_message("user"):
-                if msg['content'][0]['type'] == "text":
+                if msg['content'][0]['type'] == "text" and msg['content'][0]['text'].strip():
                     st.write(msg['content'][0]['text'])
         else:
             st.chat_message("assistant").write(msg["content"])
@@ -84,7 +84,7 @@ def main():
         st.session_state.messages.append(message)
         st.chat_message(message['role']).write(user_input)
         
-        url = "https://us-south.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29"
+        url = "https://au-syd.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29"
         
         model_messages = []
         
@@ -106,7 +106,7 @@ def main():
         
         body = {
         "messages": [model_messages[-1]],
-        "project_id": "fd71bef7-88db-45c9-a4b7-7e1ef83bc58b",
+        "project_id": "904e9692-a04f-43c9-808c-879f27478057",
         "model_id": "meta-llama/llama-3-2-90b-vision-instruct",
         "decoding_method": "greedy",
         "repetition_penalty": 1,
@@ -132,7 +132,6 @@ def main():
 
         data = response.json()
         res_content = data['choices'][0]['message']['content']
-        print(res_content)
         
         st.session_state.messages.append({"role": "assistant", "content": res_content})
         with st.chat_message("assistant"):

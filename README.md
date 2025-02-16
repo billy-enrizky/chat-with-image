@@ -16,7 +16,7 @@ This project allows users to have a conversation with an AI assistant that can p
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repository/chat-with-images.git
+   git clone https://github.com/billy-enrizky/chat-with-images.git
    cd chat-with-images
    ```
 2. Install dependencies:

@@ -7,7 +7,7 @@ This project allows users to have a conversation with an AI assistant that can p
 - **Image Upload:** Users can upload images (JPG, JPEG, PNG) for processing.
 - **Chat Interface:** Engages in text-based conversations.
 - **Image Processing:** Converts images into base64 format for analysis.
-- **IBM AI Integration:** Utilizes IBM's AI API for intelligent responses.
+- **IBM Watson Integration:** Utilizes IBM Watson API for intelligent responses.
 - **Customization Options:** Includes adjustable max tokens, decoding methods, and repetition penalties.
 - **Dark Mode Support:** Optional dark mode for better UI experience.
 - **Download Chat History:** Save conversations as a text file.
@@ -43,7 +43,7 @@ This project allows users to have a conversation with an AI assistant that can p
 ## Technologies Used
 - **Python**
 - **Streamlit**
-- **IBM AI API**
+- **IBM Watson API**
 - **PIL (Pillow)**
 - **Base64 Encoding**
 - **Requests Library**

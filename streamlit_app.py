@@ -33,6 +33,20 @@ def get_ibm_auth_token(api_key):
 def main():
     st.title("Chat With Images")
     
+# Add an "ABOUT" section using st.expander
+    with st.expander("ABOUT", expanded=False):
+        st.info("""
+            This app allows users to upload an image, convert it to a base64 string, and interact with a chat interface.
+            - **Upload an Image**: Choose an image file (jpg, jpeg, png) to upload.
+            - **Chat Interface**: Type your message and interact with the assistant.
+            - **IBM API**: The app uses IBM's API to process chat messages.
+        """)
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "uploaded_file" not in st.session_state:
+        st.session_state.uploaded_file = False
+    
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "uploaded_file" not in st.session_state:

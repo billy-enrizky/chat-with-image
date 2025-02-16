@@ -2,6 +2,7 @@ import streamlit as st
 import base64
 import requests
 from PIL import Image
+import datetime
 
 # Retrieve IBM API key from Streamlit secrets
 api_key = st.secrets["IBM_API_KEY"]
@@ -31,41 +32,45 @@ def get_ibm_auth_token(api_key):
     else:
         raise Exception("Failed to get authentication token")
 
+def generate_conversation_text():
+    conversation = ""
+    for msg in st.session_state.messages:
+        if msg["role"] == "user":
+            for item in msg["content"]:
+                if item["type"] == "text":
+                    conversation += "User: " + item["text"] + "\n"
+                elif item["type"] == "image_url":
+                    conversation += "User: [Image Uploaded]\n"
+        else:
+            conversation += "Assistant: " + str(msg["content"]) + "\n"
+    return conversation
+
 def main():
-    # Inject custom CSS for improved UI styling
-    st.markdown(
-        """
-        <style>
-        .chat-title {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #4A90E2;
-            text-align: center;
-            margin-top: 20px;
-        }
-        .sidebar-header {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .clear-btn {
-            margin-top: 10px;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
+    # Sidebar Settings
+    st.sidebar.header("Settings")
+    dark_mode = st.sidebar.checkbox("Dark Mode")
+    max_tokens = st.sidebar.number_input("Max Tokens", min_value=100, max_value=2000, value=900, step=50)
+    decoding_method = st.sidebar.selectbox("Decoding Method", options=["greedy", "beam_search", "sampling"], index=0)
+    repetition_penalty = st.sidebar.slider("Repetition Penalty", min_value=0.5, max_value=2.0, value=1.0, step=0.1)
     
-    st.markdown("<div class='chat-title'>Chat With Images</div>", unsafe_allow_html=True)
+    # Download conversation button
+    if st.sidebar.button("Download Conversation"):
+        conversation_text = generate_conversation_text()
+        st.download_button(
+            label="Download Chat as TXT",
+            data=conversation_text,
+            file_name=f"chat_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+            mime="text/plain"
+        )
     
-    # Sidebar: Chat settings and additional info
-    with st.sidebar:
-        st.header("Settings")
-        max_tokens = st.number_input("Max Tokens", min_value=100, max_value=2000, value=900, step=50)
-        decoding_method = st.selectbox("Decoding Method", options=["greedy", "beam_search", "sampling"], index=0)
-        repetition_penalty = st.slider("Repetition Penalty", min_value=0.5, max_value=2.0, value=1.0, step=0.1)
-        
-        st.markdown("---")
-        st.header("About")
+    # Clear chat button to reset conversation
+    if st.sidebar.button("Clear Chat"):
+        st.session_state.messages = []
+        st.session_state.uploaded_file = None
+        st.rerun()
+    
+    # About section as an expander (expanded=False)
+    with st.sidebar.expander("About", expanded=False):
         st.markdown(
             """
             This project allows you to have a conversation with an AI assistant that processes both images and text.
@@ -77,21 +82,56 @@ def main():
             - **Model Response:** The assistant responds via IBM's API using a vision-enabled language model.
             """
         )
-        # Clear chat button to reset conversation
-        if st.button("Clear Chat"):
-            st.session_state.messages = []
-            st.session_state.uploaded_file = None
-            st.experimental_rerun()
     
-    # Initialize session state variables if they do not exist
+    # Inject custom CSS styling (with dark mode support)
+    if dark_mode:
+        st.markdown(
+            """
+            <style>
+            body {
+                background-color: #121212;
+                color: #e0e0e0;
+            }
+            .chat-title {
+                font-size: 2.5rem;
+                font-weight: bold;
+                color: #BB86FC;
+                text-align: center;
+                margin-top: 20px;
+            }
+            .css-1d391kg, .css-1d391kg * {
+                background-color: #1f1f1f;
+                color: #e0e0e0;
+            }
+            </style>
+            """, unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            """
+            <style>
+            .chat-title {
+                font-size: 2.5rem;
+                font-weight: bold;
+                color: #4A90E2;
+                text-align: center;
+                margin-top: 20px;
+            }
+            </style>
+            """, unsafe_allow_html=True
+        )
+    
+    st.markdown("<div class='chat-title'>Chat With Images</div>", unsafe_allow_html=True)
+    
+    # Initialize session state variables if not already set
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "uploaded_file" not in st.session_state:
         st.session_state.uploaded_file = None
     
-    # Main container for chat interactions
+    # Main chat container
     with st.container():
-        # File uploader for image input
+        # Image uploader for image input
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
         if uploaded_file is not None:
             try:
@@ -101,7 +141,7 @@ def main():
             else:
                 with st.chat_message("user"):
                     st.image(image, caption="Uploaded Image", use_container_width=True)
-                    base64_image = convert_image_to_base64(uploaded_file=uploaded_file)
+                    base64_image = convert_image_to_base64(uploaded_file)
                     if st.session_state.uploaded_file is None:
                         st.session_state.messages.append({
                             "role": "user", 
@@ -127,9 +167,8 @@ def main():
                     st.write(msg["content"])
         
         # Chat input field for user messages
-        user_input = st.chat_input("Type your message here...")
+        user_input = st.chat_input("Type your message here...", key="chat_input")
         if user_input and user_input.strip():
-            # Append user's text message to session state
             message = {
                 "role": "user",
                 "content": [{"type": "text", "text": user_input}]
@@ -138,8 +177,8 @@ def main():
             with st.chat_message("user"):
                 st.write(user_input)
             
-            # Prepare payload for IBM API request
-            url = "https://au-syd.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29"
+            # Prepare payload for IBM API call
+            api_url = "https://au-syd.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29"
             model_messages = []
             latest_image_url = None
             
@@ -170,7 +209,7 @@ def main():
             }
             
             try:
-                YOUR_ACCESS_TOKEN = get_ibm_auth_token(api_key)
+                access_token = get_ibm_auth_token(api_key)
             except Exception as e:
                 st.error("Failed to get IBM authentication token.")
                 return
@@ -178,12 +217,12 @@ def main():
             headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {YOUR_ACCESS_TOKEN}"
+                "Authorization": f"Bearer {access_token}"
             }
             
-            # Use a spinner to indicate loading while awaiting the response
+            # Show spinner while waiting for the assistant's response
             with st.spinner("Waiting for assistant response..."):
-                response = requests.post(url, headers=headers, json=body)
+                response = requests.post(api_url, headers=headers, json=body)
             
             if response.status_code != 200:
                 st.error("Error from assistant: " + str(response.text))
@@ -195,7 +234,7 @@ def main():
             st.session_state.messages.append({"role": "assistant", "content": res_content})
             with st.chat_message("assistant"):
                 st.write(res_content)
-                st.balloons()  # Celebrate the new response!
+                st.balloons()
 
 if __name__ == "__main__":
     main()

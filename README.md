@@ -1,5 +1,8 @@
 # Chat With Images - AI Assistant
 
+## App User Interface
+![App Interface](app.png)
+
 ## Overview
 This project allows users to have a conversation with an AI assistant that can process both text and images using IBM's AI API. The assistant can analyze uploaded images and provide responses based on user interactions.
 
